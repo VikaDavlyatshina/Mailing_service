@@ -1,0 +1,20 @@
+[project]
+name = "mailing-service"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Davlystshina Victoria",email = "vika.davlyatshina@mail.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django (>=6.0.2,<7.0.0)",
+    "python-dotenv (>=1.2.1,<2.0.0)",
+    "psycopg (>=3.3.3,<4.0.0)",
+    "pillow (>=12.1.1,<13.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
