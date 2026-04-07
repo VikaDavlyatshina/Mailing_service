@@ -1,3 +1,6 @@
+[tool.poetry]
+package-mode = false
+
 [project]
 name = "mailing-service"
 version = "0.1.0"
@@ -5,13 +8,17 @@ description = ""
 authors = [
     {name = "Davlystshina Victoria",email = "vika.davlyatshina@mail.ru"}
 ]
+
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django (>=6.0.2,<7.0.0)",
     "python-dotenv (>=1.2.1,<2.0.0)",
-    "psycopg (>=3.3.3,<4.0.0)",
     "pillow (>=12.1.1,<13.0.0)",
+    "black (>=26.3.1,<27.0.0)",
+    "isort (>=8.0.1,<9.0.0)",
+    "flake8 (>=7.3.0,<8.0.0)",
+    "psycopg2-binary (>=2.9.11,<3.0.0)",
 ]
 
 
