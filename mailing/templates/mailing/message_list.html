@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Сообщения{% endblock %}
+
+{% block content %}
+    <h1>Сообщения</h1>
+    <a href="{% url 'mailing:message_create' %}" class="btn btn-primary mb-3">➕ Добавить</a>
+    
+    {% if messages %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Тема письма</th>
+                    <th>Тело письма</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in messages %}
+                <tr>
+                    <td>{{ message.subject }}</td>
+                    <td>{{ message.email_body }}</td>
+                    <td>
+                        <a href="{% url 'mailing:message_detail' message.pk %}">👁️</a>
+                        <a href="{% url 'mailing:message_update' message.pk %}">✏️</a>
+                        <a href="{% url 'mailing:message_delete' message.pk %}">❌</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет сообщений.</p>
+    {% endif %}
+{% endblock %}
