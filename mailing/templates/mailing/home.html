@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Сервис управления рассылками{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">📧 Сервис управления рассылками</h1>
+
+<div class="stats">
+    <div class="card-custom">
+        <h2>📨 Всего рассылок</h2>
+        <p class="number">{{ total_mailings }}</p>
+    </div>
+
+    <div class="card-custom">
+        <h2>⚡ Активных рассылок</h2>
+        <p class="number">{{ active_mailings }}</p>
+    </div>
+
+    <div class="card-custom">
+        <h2>👥 Уникальных получателей</h2>
+        <p class="number">{{ unique_recipients }}</p>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="{% url 'mailing:recipient_list' %}" class="btn btn-primary me-2">📋 Управление получателями</a>
+    <a href="/admin/" class="btn btn-secondary">🔧 Админка</a>
+</div>
+{% endblock %}
