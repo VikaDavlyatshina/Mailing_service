@@ -19,6 +19,10 @@ dependencies = [
     "isort (>=8.0.1,<9.0.0)",
     "flake8 (>=7.3.0,<8.0.0)",
     "psycopg2-binary (>=2.9.11,<3.0.0)",
+    "ipython (>=9.12.0,<10.0.0)",
+    "phonenumbers (>=9.0.27,<10.0.0)",
+    "django-phonenumber-field (>=8.4.0,<9.0.0)",
+    "redis (>=7.4.0,<8.0.0)",
 ]
 
 
