@@ -15,14 +15,14 @@ class CustomUserManager(BaseUserManager):
         """
         # Проверяем, что email указан
         if not email:
-            raise ValueError('Email обязателен')
+            raise ValueError("Email обязателен")
 
         # Приводим email к нижнему регистру
         email = self.normalize_email(email)
 
         # Если username не передан — создаёт из email
-        if 'username' not in extra_fields or not extra_fields.get('username'):
-            extra_fields['username'] = email.split('@')[0]
+        if "username" not in extra_fields or not extra_fields.get("username"):
+            extra_fields["username"] = email.split("@")[0]
 
         # Создаём объект пользователя
         user = self.model(email=email, **extra_fields)
@@ -36,14 +36,14 @@ class CustomUserManager(BaseUserManager):
         """
         Создание суперпользователя.
         """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_active", True)
 
-        if not extra_fields.get('is_staff'):
-            raise ValueError('Суперпользователь должен иметь is_staff=True')
-        if not extra_fields.get('is_superuser'):
-            raise ValueError('Суперпользователь должен иметь is_superuser=True')
+        if not extra_fields.get("is_staff"):
+            raise ValueError("Суперпользователь должен иметь is_staff=True")
+        if not extra_fields.get("is_superuser"):
+            raise ValueError("Суперпользователь должен иметь is_superuser=True")
 
         return self.create_user(email, password, **extra_fields)
 
@@ -60,8 +60,8 @@ class CustomUser(AbstractUser):
         unique=True,
         blank=True,
         null=True,
-        verbose_name="Логин (опционально)" ,
-        help_text="Будет создан автоматически из email, если не указан"
+        verbose_name="Логин (опционально)",
+        help_text="Будет создан автоматически из email, если не указан",
     )
     # 2. Slug для красивых URL (автоматически из username)
     slug = models.SlugField(
@@ -70,29 +70,35 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True,
         verbose_name="Slug для URL",
-        help_text="Автоматически создаётся из username"
+        help_text="Автоматически создаётся из username",
     )
 
     # 3. Основной идентификатор для входа
     email = models.EmailField(
-        unique=True,
-        verbose_name="Email",
-        help_text="Используется для входа в систему"
+        unique=True, verbose_name="Email", help_text="Используется для входа в систему"
     )
 
     # 4. Дополнительные поля
-    phone = PhoneNumberField(verbose_name="Телефон", help_text="Введите номер телефона", blank=True, null=True, )
+    phone = PhoneNumberField(
+        verbose_name="Телефон",
+        help_text="Введите номер телефона",
+        blank=True,
+        null=True,
+    )
     avatar = models.ImageField(
-        upload_to="users/avatars/", verbose_name="Аватар", help_text="Загрузите свой аватар", blank=True, null=True, )
-    birth_date = models.DateField(verbose_name='Дата рождения', help_text='Укажите дату рождения', blank=True,
-                                  null=True)
+        upload_to="users/avatars/",
+        verbose_name="Аватар",
+        help_text="Загрузите свой аватар",
+        blank=True,
+        null=True,
+    )
     # Токен для подтверждения email (очищается после подтверждения)
     token = models.CharField(
         max_length=100,
         blank=True,
         null=True,
         verbose_name="Токен подтверждения",
-        help_text="Используется для верификации email при регистрации"
+        help_text="Используется для верификации email при регистрации",
     )
     # 5. Кастомный менеджер
     objects = CustomUserManager()
@@ -107,29 +113,30 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
-        ordering = ['username']  # Сортировка по username
+        ordering = ["username"]  # Сортировка по username
 
     def save(self, *args, **kwargs):
         """Автоматически создаём username и slug, если они пустые"""
+
+        # Создаём username
         if not self.username and self.email:
             base_username = self.email.split('@')[0]
             self.username = base_username
-
-            # Проверяем уникальность с ограничением
             counter = 1
-            max_attempts = 100  # Защита от бесконечного цикла
-            while CustomUser.objects.filter(username=self.username).exists() and counter <= max_attempts:
+            while CustomUser.objects.filter(username=self.username).exists():
                 self.username = f"{base_username}{counter}"
                 counter += 1
 
-        # Создаём slug из username
+        # Создаём slug из username (с проверкой уникальности)
         if self.username and not self.slug:
-            self.slug = slugify(self.username)
+            base_slug = slugify(self.username)
+            self.slug = base_slug
+            counter = 1
+            while CustomUser.objects.filter(slug=self.slug).exists():
+                self.slug = f"{base_slug}-{counter}"
+                counter += 1
 
         super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.username if self.username else self.email
 
     def get_display_name(self):
         """Имя для отображения в интерфейсе"""
@@ -137,11 +144,4 @@ class CustomUser(AbstractUser):
             return self.username
         if self.first_name:
             return self.first_name
-        return self.email.split('@')[0]
-
-    def get_absolute_url(self):
-        """URL для профиля пользователя"""
-        from django.urls import reverse
-        if self.slug:
-            return reverse('users:profile', kwargs={'slug': self.slug})
-        return reverse('users:profile', kwargs={'pk': self.pk})
+        return self.email.split("@")[0]
