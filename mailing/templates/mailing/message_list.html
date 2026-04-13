@@ -19,7 +19,7 @@
                 {% for message in messages %}
                 <tr>
                     <td>{{ message.subject }}</td>
-                    <td>{{ message.email_body }}</td>
+                    <td>{{ message.email_body|truncatechars:100 }}</td>
                     <td>
                         <a href="{% url 'mailing:message_detail' message.pk %}">👁️</a>
                         <a href="{% url 'mailing:message_update' message.pk %}">✏️</a>
