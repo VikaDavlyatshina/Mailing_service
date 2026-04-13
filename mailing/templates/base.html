@@ -47,58 +47,119 @@
             color: #007bff;
             margin: 0;
         }
+
+        /* Для кнопки выхода в стиле ссылки */
+        .btn-logout {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,.55);
+            padding: 8px 16px;
+        }
+        .btn-logout:hover {
+            color: rgba(255,255,255,.75);
+            text-decoration: none;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Bootstrap навигация -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'mailing:home' %}">📧 Рассылки</a>
-            <div class="navbar-nav">
-                <a class="nav-link" href="{% url 'mailing:recipient_list' %}">Получатели</a>
-                <a class="nav-link" href="{% url 'mailing:message_list' %}">Сообщения</a>
-                <a class="nav-link" href="{% url 'mailing:mailing_list' %}">Рассылки</a>
-            </div>
+<!-- Bootstrap навигация -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'mailing:home' %}">📧 Рассылки</a>
+
+        {# Кнопка для мобильных устройств #}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {# Левая часть меню #}
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'mailing:recipient_list' %}">Получатели</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'mailing:message_list' %}">Сообщения</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'mailing:mailing_list' %}">Рассылки</a>
+                </li>
+            </ul>
+
+            {# Правая часть меню (пользователь) #}
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:profile' %}">
+                            👤 {{ user.get_display_name }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <form action="{% url 'users:logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link nav-link btn-logout">
+                                🚪 Выйти
+                            </button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:login' %}">🔐 Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:register' %}">📝 Регистрация</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
-
-    <div class="container mt-4">
-        {% block content %}{% endblock %}
     </div>
+</nav>
 
-<div class="container">
-        <footer class="pt-4 my-md-5 pt-md-5 border-top">
-            <div class="row">
-                <div class="col-12 col-md">
-                    Сервис рассылок
-                    <small class="d-block mb-3 text-muted">&copy; 2026</small>
-                </div>
-                <div class="col-6 col-md">
-                    <h5>Категории</h5>
-                    <ul class="list-unstyled text-small">
-                        <li><a class="text-muted" href="#">Телеграм боты</a></li>
-                        <li><a class="text-muted" href="#">Полезные утилиты</a></li>
-                        <li><a class="text-muted" href="#">Веб-приложения</a></li>
-                        <li><a class="text-muted" href="#">Микросервисы</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-md">
-                    <h5>Дополнительно</h5>
-                    <ul class="list-unstyled text-small">
-                        <li><a class="text-muted" href=#>Мы пишем</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-md">
-                    <h5>О нас</h5>
-                    <ul class="list-unstyled text-small">
-                        <li><a class="text-muted" href=#>Контакты</a></li>
-                    </ul>
-                </div>
+<div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        </footer>
+        {% endfor %}
+    {% endif %}
 
+    {% block content %}{% endblock %}
+</div>
+
+<footer class="container mt-5 pt-4 border-top">
+    <div class="row">
+        <div class="col-12 col-md">
+            Сервис рассылок
+            <small class="d-block mb-3 text-muted">&copy; 2026</small>
+        </div>
+        <div class="col-6 col-md">
+            <h5>Категории</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Телеграм боты</a></li>
+                <li><a class="text-muted" href="#">Полезные утилиты</a></li>
+                <li><a class="text-muted" href="#">Веб-приложения</a></li>
+                <li><a class="text-muted" href="#">Микросервисы</a></li>
+            </ul>
+        </div>
+        <div class="col-6 col-md">
+            <h5>Дополнительно</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Мы пишем</a></li>
+            </ul>
+        </div>
+        <div class="col-6 col-md">
+            <h5>О нас</h5>
+            <ul class="list-unstyled text-small">
+                <li><a class="text-muted" href="#">Контакты</a></li>
+            </ul>
+        </div>
     </div>
+</footer>
 
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+{% block extra_js %}{% endblock %}
 </body>
 </html>
