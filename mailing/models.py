@@ -85,9 +85,7 @@ class Mailing(models.Model):
         """Валидация - вызывается перед сохранением"""
         if self.start_time and self.end_time:
             if self.start_time >= self.end_time:
-                raise ValidationError(
-                    "Дата начала должна быть раньше даты окончания"
-                )
+                raise ValidationError("Дата начала должна быть раньше даты окончания")
 
         # Проверяем новые рассылки
         if not self.pk and self.start_time and self.start_time < timezone.now():
