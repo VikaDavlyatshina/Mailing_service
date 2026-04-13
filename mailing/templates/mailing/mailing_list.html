@@ -12,8 +12,9 @@
     <tr>
         <th>Получатели</th>
         <th>Сообщение</th>
-        <th>Дата и время начала рассылки</th>
-        <th>Дата и время окончания рассылки</th>
+        <th>Начало</th>
+        <th>Окончание</th>
+        <th>Статус</th>
         <th>Действия</th>
     </tr>
     </thead>
@@ -23,14 +24,19 @@
         <td>
             <ul class="mb-0">
                 {% for recipient in mailing.recipients.all %}
-                <li>{{ recipient.name }} ({{ recipient.email }})</li>
+                <li>{{ recipient.full_name }} ({{ recipient.email }})</li>
                 {% endfor %}
             </ul>
         </td>
 
-        <td>{{ mailing.message }}</td>
-        <td>{{ mailing.start_time }}</td>
-        <td>{{ mailing.end_time }}</td>
+        <td>{{ mailing.message.subject }}</td>
+        <td>{{ mailing.start_time|date:"d.m.Y H:i" }}</td>
+        <td>{{ mailing.end_time|date:"d.m.Y H:i" }}</td>
+        <td>
+            <span class="badge bg-{% if mailing.get_dynamic_status == 'created' %}secondary{% elif mailing.get_dynamic_status == 'launched' %}success{% else %}danger{% endif %}">
+                {{ mailing.get_status_display }}
+            </span>
+        </td>
         <td>
             <a href="{% url 'mailing:mailing_detail' mailing.pk %}">👁️</a>
             <a href="{% url 'mailing:mailing_update' mailing.pk %}">✏️</a>
