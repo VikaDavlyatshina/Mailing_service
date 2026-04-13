@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
 
@@ -134,11 +134,16 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Указываем кастомную модель пользователя
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = "users.CustomUser"
 
-LOGIN_REDIRECT_URL = "/"
+# Куда перенаправлять после входа
+LOGIN_REDIRECT_URL = "mailing:home"
 
-LOGIN_LOGOUT_REDIRECT_URL = "/"
+# Куда перенаправлять после выхода
+LOGOUT_REDIRECT_URL = "mailing:home"
+
+#   Страница для входа
+LOGIN_URL = "users:login"
 
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
