@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль {{ user_obj.get_display_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h2 class="mb-0">👤 Профиль пользователя</h2>
+            </div>
+            <div class="card-body">
+                {# Аватар #}
+                <div class="text-center mb-4">
+                    {% if user_obj.avatar %}
+                        <img src="{{ user_obj.avatar.url }}" alt="Аватар"
+                             style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid #6c757d;">
+                    {% else %}
+                        <div style="width: 120px; height: 120px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                            <span style="color: #999;">Нет фото</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Информация о пользователе (только чтение) #}
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 150px;">Логин:</th>
+                        <td>{{ user_obj.username|default:"не указан" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Имя:</th>
+                        <td>{{ user_obj.first_name|default:"не указано" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Фамилия:</th>
+                        <td>{{ user_obj.last_name|default:"не указана" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Телефон:</th>
+                        <td>{{ user_obj.phone|default:"не указан" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ user_obj.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Активен:</th>
+                        <td>{% if user_obj.is_active %}✅ Да{% else %}❌ Нет{% endif %}</td>
+                    </tr>
+                </table>
+
+                <div class="mt-3">
+                    <a href="{% url 'mailing:home' %}" class="btn btn-secondary">← На главную</a>
+<!--                    {# TODO: добавить блокировку пользователей для менеджеров #}-->
+<!--                    {% if is_manager and user_obj.is_active %}-->
+<!--                        <a href="{% url 'users:block_user' user_obj.slug %}" class="btn btn-danger">🔒 Заблокировать</a>-->
+<!--                    {% endif %}-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
