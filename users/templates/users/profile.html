@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Мой профиль{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">👤 {{ title }}</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    {# ========== ПРЕДПРОСМОТР АВАТАРА ========== #}
+                    <div class="text-center mb-4" id="avatar-container">
+                        {% if user_obj.avatar %}
+                            <img id="current-avatar" src="{{ user_obj.avatar.url }}"
+                                 alt="Аватар"
+                                 style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid #007bff;">
+                        {% else %}
+                            <div id="avatar-placeholder"
+                                 style="width: 120px; height: 120px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                <span style="color: #999;">Нет фото</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# ========== ВСЕ ПОЛЯ ФОРМЫ ========== #}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% if field.errors %}
+                                <div class="alert alert-danger mt-1 small">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">💾 {{ button_text|default:"Сохранить" }}</button>
+                        <a href="{{ cancel_url }}" class="btn btn-secondary">← Отмена</a>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-muted small">
+                📧 Email: {{ user_obj.email }} (изменить нельзя)
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Простой предпросмотр аватара
+    const avatarField = document.getElementById('id_avatar');
+    if (avatarField) {
+        avatarField.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Удаляем старый контент в контейнере аватара
+                    const container = document.getElementById('avatar-container');
+                    if (container) {
+                        container.innerHTML = `<img src="${event.target.result}"
+                                                   alt="Предпросмотр"
+                                                   style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid #28a745;">`;
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+</script>
+{% endblock %}
