@@ -1,58 +1,35 @@
 from django.contrib import admin
+from django.utils.html import format_html  # <-- ВАЖНО! Импортируем для HTML
 from mailing.models import Mailing, Recipient, Message, MailingAttempt
 
 
-# Register your models here.
-
 @admin.register(Recipient)
 class RecipientAdmin(admin.ModelAdmin):
-    """ Настройка отображения Получателей в админке """
+    """Настройка отображения Получателей в админке"""
 
-    # Поля, которые отображаются в списке
-    list_display = ( 'email', 'full_name', 'comment_preview', 'owner')
-
-    # Поля, по которым можно фильтровать
-    list_filter = ('owner', 'full_name')
-
-    # Поля, по которым можно искать
-
-    # Двойное подчеркивание __ для того, чтобы взять связанное значение из другой таблицы
-    # owner__email - искать по email владельца
+    list_display = ('id', 'email', 'full_name', 'comment_preview', 'owner')
+    list_filter = ('owner',)
     search_fields = ('owner__email', 'full_name', 'email')
-
-    # Сортировка по умолчанию
     ordering = ['email']
 
     def comment_preview(self, obj):
         """Показывает первые 30 символов комментария."""
-        # Проверяем, есть ли комментарий
         if obj.comment:
-            # Если длина больше 30 — обрезаем и добавляем '...'
             if len(obj.comment) > 30:
                 return obj.comment[:30] + '...'
-            # Если короче — возвращаем как есть
             return obj.comment
-        # Если комментария нет — возвращаем прочерк
         return "—"
 
-    # Это нужно, чтобы в таблице был нормальный заголовок колонки
     comment_preview.short_description = 'Комментарий'
 
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    """ Настройка отображения Сообщения в админке """
+    """Настройка отображения Сообщений в админке"""
 
-    # Поля, которые отображаются в списке
-    list_display = ('subject', 'body_preview', 'owner')
-
-    # Поля, по которым можно фильтровать
-    list_filter = ('owner', 'subject')
-
-    # Поля, по которым можно искать
-    search_fields = ('owner', 'subject', 'email_body')
-
-    # Сортировка по умолчанию
+    list_display = ('id', 'owner', 'subject', 'body_preview')
+    list_filter = ('owner',)
+    search_fields = ('owner__email', 'subject', 'email_body')
     ordering = ['subject']
 
     def body_preview(self, obj):
@@ -63,69 +40,122 @@ class MessageAdmin(admin.ModelAdmin):
             return obj.email_body
         return "—"
 
-    body_preview.short_description = 'Текст сообщения'
+    body_preview.short_description = 'Текст'
 
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
-    """ Настройка отображения Рассылки в админке """
+    """Настройка отображения Рассылок в админке"""
 
-    # Поля, которые отображаются в списке
-    list_display = ('status','message_subject', 'recipients_count', 'start_time', 'end_time', 'owner')
+    # Поля в таблице
+    list_display = (
+        'id',
+        'message_subject',
+        'recipients_count',
+        'start_time',
+        'end_time',
+        'status_badge',
+        'owner',
+    )
 
-    # # Поля, которые отображаются в списке
-    # list_display = ('status', 'recipients', 'message', 'start_time', 'end_time', 'owner')
+    # Фильтры справа
+    list_filter = ('status', 'owner', 'start_time')
 
-    # Поля, по которым можно фильтровать
-    list_filter = ('owner', 'status', 'start_time', 'end_time')
+    # Поиск
+    search_fields = ('owner__email', 'message__subject')
 
-    # Поля, по которым можно искать
-    search_fields = ('owner__email', 'message__subject', 'status')
+    # Сортировка (новые сверху)
+    ordering = ['-start_time']
 
-    # Сортировка по умолчанию
-    ordering = ['-start_time']  # Минус = по убыванию (новые сверху)
+    # ========== КАСТОМНЫЕ ПОЛЯ ==========
+
+    def status_badge(self, obj):
+        """Красивая цветная плашка для статуса (как Bootstrap badge)."""
+
+        # Настройки для каждого статуса
+        if obj.status == 'created':
+            color = '#6c757d'  # Серый
+            text = 'Создана'
+        elif obj.status == 'launched':
+            color = '#28a745'  # Зелёный
+            text = 'Запущена'
+        elif obj.status == 'completed':
+            color = '#007bff'  # Синий
+            text = 'Завершена'
+        else:
+            color = '#999999'
+            text = obj.status
+
+        # Создаём HTML-плашку
+        return format_html(
+            '<span style="background-color: {}; color: white; '
+            'padding: 4px 8px; border-radius: 4px; '
+            'font-weight: 500; font-size: 13px;">{}</span>',
+            color, text
+        )
+
+    status_badge.short_description = 'Статус'
+    status_badge.admin_order_field = 'status'  # Можно сортировать по статусу
 
     def message_subject(self, obj):
-        """Возвращает тему сообщения, привязанного к рассылке."""
-        # obj.message — это объект Message
-        # obj.message.subject — его тема
+        """Показывает тему сообщения."""
         return obj.message.subject
 
-    message_subject.short_description = 'Тема сообщения'
+    message_subject.short_description = 'Тема'
+    message_subject.admin_order_field = 'message__subject'
 
     def recipients_count(self, obj):
-        """Возвращает количество получателей в рассылке."""
-        # obj.recipients — это менеджер ManyToMany
-        # .count() возвращает количество записей
+        """Показывает количество получателей."""
         return obj.recipients.count()
 
     recipients_count.short_description = 'Получателей'
 
 
-
 @admin.register(MailingAttempt)
 class MailingAttemptAdmin(admin.ModelAdmin):
-    """ Настройка отображения Попытки рассылки в админке """
+    """Настройка отображения Попыток рассылки"""
 
+    list_display = ('attempt_time', 'mailing', 'recipient', 'status_badge', 'response_preview')
+    list_filter = ('status', 'mailing')
+    search_fields = ('mailing__message__subject', 'recipient__email', 'server_response')
+    ordering = ['-attempt_time']
+
+    # Только для чтения
+    readonly_fields = ('attempt_time', 'status', 'server_response', 'mailing', 'recipient')
+
+    # Запрещаем создание и редактирование
     def has_add_permission(self, request):
-        """Запрещает создание новых попыток через админку."""
         return False
 
     def has_change_permission(self, request, obj=None):
-        """Запрещает редактирование попыток."""
         return False
 
-    # Поля, которые отображаются в списке
-    list_display = ('attempt_time', 'status', 'server_response', 'mailing', 'recipient')
-    readonly_fields = ['attempt_time', 'status', 'server_response', 'mailing', 'recipient']
+    # ========== КАСТОМНЫЕ ПОЛЯ ==========
 
-    # Поля, по которым можно фильтровать
-    list_filter = ('status', 'mailing')
+    def status_badge(self, obj):
+        """Цветная плашка для статуса попытки."""
+        if obj.status == 'success':
+            color = '#28a745'
+            text = 'Успешно'
+        else:
+            color = '#dc3545'
+            text = 'Ошибка'
 
-    # Поля, по которым можно искать
-    search_fields = ('status', 'mailing')
+        return format_html(
+            '<span style="background-color: {}; color: white; '
+            'padding: 4px 8px; border-radius: 4px; '
+            'font-weight: 500; font-size: 13px;">{}</span>',
+            color, text
+        )
 
-    # Сортировка по умолчанию
-    ordering = ['status']
+    status_badge.short_description = 'Статус'
 
+    def response_preview(self, obj):
+        """Показывает первые 50 символов ответа сервера."""
+        if obj.server_response:
+            if len(obj.server_response) > 50:
+                return obj.server_response[:50] + '...'
+            return obj.server_response
+        return "—"
 
+    response_preview.short_description = 'Ответ сервера'
