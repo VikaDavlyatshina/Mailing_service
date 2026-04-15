@@ -155,3 +155,6 @@ EMAIL_USE_SSL = True
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
+
+# Время жизни токена в секундах
+PASSWORD_RESET_TIMEOUT = 3600  # 1 час (по умолчанию 3 дня)
