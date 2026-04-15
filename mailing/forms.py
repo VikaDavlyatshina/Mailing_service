@@ -1,5 +1,7 @@
 from django import forms
-from .models import Recipient, Message, Mailing
+
+from .models import Mailing, Message, Recipient
+
 
 class BootstrapFormMixin:
     """
@@ -38,23 +40,23 @@ class BootstrapFormMixin:
             # ========== 1. ОПРЕДЕЛЯЕМ CSS КЛАСС ==========
             # Выпадающие списки (<select>) — используем form-select
             if isinstance(widget, (forms.Select, forms.SelectMultiple)):
-                css_class = 'form-select'
+                css_class = "form-select"
             # Чекбоксы (<input type="checkbox">) — используем form-check-input
             elif isinstance(widget, forms.CheckboxInput):
-                css_class = 'form-check-input'
+                css_class = "form-check-input"
             else:
                 # Все остальные поля — используем form-control
-                css_class = 'form-control'
+                css_class = "form-control"
 
             # ========== 2. ДОБАВЛЯЕМ CSS КЛАСС К ВИДЖЕТУ ==========
             # widget.attrs — словарь HTML-атрибутов (class, placeholder, id и т.д.)
 
-            if 'class' in widget.attrs:
+            if "class" in widget.attrs:
                 # Если класс уже есть — добавляем новый через пробел
-                widget.attrs['class'] += f' {css_class}'
+                widget.attrs["class"] += f" {css_class}"
             else:
                 # Если класса нет — просто ставим наш класс
-                widget.attrs['class'] = css_class
+                widget.attrs["class"] = css_class
 
             # ========== 3. ДОБАВЛЯЕМ PLACEHOLDER ДЛЯ ТЕКСТОВЫХ ПОЛЕЙ ==========
             # Проверяем, что это текстовое поле (не чекбокс, не выпадающий список)
@@ -63,10 +65,9 @@ class BootstrapFormMixin:
                 # Добавляем placeholder, только если:
                 # 1) placeholder ещё не задан (чтобы не перезаписать явный)
                 # 2) у поля есть label (чтобы было что вставить)
-                if 'placeholder' not in widget.attrs and field.label:
+                if "placeholder" not in widget.attrs and field.label:
                     # Создаём placeholder: "Введите Имя поля"
-                    widget.attrs['placeholder'] = f'Введите {field.label.lower()}'
-
+                    widget.attrs["placeholder"] = f"Введите {field.label.lower()}"
 
 
 class RecipientForm(BootstrapFormMixin, forms.ModelForm):
@@ -74,20 +75,20 @@ class RecipientForm(BootstrapFormMixin, forms.ModelForm):
 
     class Meta:
         model = Recipient
-        fields = ['email', 'full_name', 'comment']
+        fields = ["email", "full_name", "comment"]
         labels = {
-            'email': 'Email адрес',
-            'full_name': 'ФИО получателя',
-            'comment': 'Комментарий',
+            "email": "Email адрес",
+            "full_name": "ФИО получателя",
+            "comment": "Комментарий",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Специфичные настройки, которые не вынесены в миксин
-        self.fields['comment'].widget.attrs['rows'] = 3
-        self.fields['email'].widget.attrs['placeholder'] = 'example@mail.ru'
-        self.fields['full_name'].widget.attrs['placeholder'] = 'Иванов Иван Иванович'
+        self.fields["comment"].widget.attrs["rows"] = 3
+        self.fields["email"].widget.attrs["placeholder"] = "example@mail.ru"
+        self.fields["full_name"].widget.attrs["placeholder"] = "Иванов Иван Иванович"
 
 
 class MessageForm(BootstrapFormMixin, forms.ModelForm):
@@ -95,39 +96,58 @@ class MessageForm(BootstrapFormMixin, forms.ModelForm):
 
     class Meta:
         model = Message
-        fields = ['subject', 'email_body']
+        fields = ["subject", "email_body"]
         labels = {
-            'subject': 'Тема письма',
-            'email_body': 'Тело письма',
+            "subject": "Тема письма",
+            "email_body": "Тело письма",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['email_body'].widget.attrs['rows'] = 10
-        self.fields['subject'].widget.attrs['placeholder'] = 'Тема письма'
+        self.fields["email_body"].widget.attrs["rows"] = 10
+        self.fields["subject"].widget.attrs["placeholder"] = "Тема письма"
 
 
 class MailingForm(BootstrapFormMixin, forms.ModelForm):
-    """Форма для рассылки"""
+    """Форма для рассылки с календарём"""
 
     class Meta:
         model = Mailing
-        fields = ['start_time', 'end_time', 'message', 'recipients']
+        fields = ["start_time", "end_time", "message", "recipients"]
         labels = {
-            'start_time': 'Дата и время начала',
-            'end_time': 'Дата и время окончания',
-            'message': 'Сообщение',
-            'recipients': 'Получатели',
+            "start_time": "📅 Дата и время начала",
+            "end_time": "📅 Дата и время окончания",
+            "message": "✉️ Сообщение",
+            "recipients": "👥 Получатели",
         }
         help_texts = {
-            'start_time': 'Формат: ГГГГ-ММ-ДД ЧЧ:ММ',
-            'end_time': 'Формат: ГГГГ-ММ-ДД ЧЧ:ММ',
-            'recipients': 'Удерживайте Ctrl для выбора нескольких получателей',
+            "start_time": "Нажмите на поле, чтобы открыть календарь",
+            "end_time": "Нажмите на поле, чтобы открыть календарь",
+            "recipients": "Удерживайте Ctrl для выбора нескольких",
+        }
+        widgets = {
+            "start_time": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "class": "form-control"}
+            ),
+            "end_time": forms.DateTimeInput(
+                attrs={"type": "datetime-local", "class": "form-control"}
+            ),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Дополнительные настройки
-        self.fields['recipients'].widget.attrs['size'] = 8
+        # Размер поля для получателей
+        self.fields["recipients"].widget.attrs["size"] = 8
+
+        # Для редактирования — подставляем текущие даты в правильном формате
+        if self.instance and self.instance.pk:
+            if self.instance.start_time:
+                self.fields["start_time"].widget.attrs["value"] = (
+                    self.instance.start_time.strftime("%Y-%m-%dT%H:%M")
+                )
+            if self.instance.end_time:
+                self.fields["end_time"].widget.attrs["value"] = (
+                    self.instance.end_time.strftime("%Y-%m-%dT%H:%M")
+                )
