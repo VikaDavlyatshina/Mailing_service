@@ -26,6 +26,9 @@
                     <button type="submit" class="btn btn-success">Войти</button>
                     <a href="{% url 'users:register' %}" class="btn btn-secondary">Нет аккаунта?</a>
                 </form>
+                <div class="text-center mt-3">
+                    <a href="{% url 'users:password_reset' %}">Забыли пароль?</a>
+                </div>
             </div>
         </div>
     </div>
