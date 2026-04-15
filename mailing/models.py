@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from config import settings
 
 # Create your models here.
 
@@ -21,6 +22,13 @@ class Recipient(models.Model):
         verbose_name="Комментарий",
         help_text="Укажите комментарий для получателя",
     )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+    )
 
     def __str__(self):
         return self.email
@@ -28,7 +36,12 @@ class Recipient(models.Model):
     class Meta:
         verbose_name = "Получатель рассылки"
         verbose_name_plural = "Получатели рассылки"
+        # Сортировка
         ordering = ["email"]
+        # Кастомные права
+        permissions = [
+            ('can_view_all_recipients', 'Может просматривать всех получателей'),
+        ]
 
 
 class Message(models.Model):
@@ -41,6 +54,14 @@ class Message(models.Model):
     # Тело письма
     email_body = models.TextField()
 
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+    )
+
     # Показываем тему письма
     def __str__(self):
         return self.subject
@@ -48,6 +69,9 @@ class Message(models.Model):
     class Meta:
         verbose_name = "Сообщение"
         verbose_name_plural = "Сообщения"
+        permissions = [
+            ("can_view_all_messages", "Может просматривать все сообщения"),
+        ]
 
 
 class Mailing(models.Model):
@@ -80,6 +104,14 @@ class Mailing(models.Model):
     start_time = models.DateTimeField(verbose_name="Дата и время начала рассылки")
     # До какого момента разрешено отправлять рассылку
     end_time = models.DateTimeField(verbose_name="Дата и время окончания рассылки")
+
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name="Владелец",
+    )
 
     def clean(self):
         """Валидация - вызывается перед сохранением"""
@@ -131,7 +163,13 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
+        # Сортировка
         ordering = ["-start_time"]  # сначала новые рассылки
+        # Кастомные права
+        permissions = [
+            ("can_view_all_mailings", "Может просматривать все рассылки"),
+            ("can_disable_mailings", "Может отключать рассылки"),
+        ]
 
 
 class MailingAttempt(models.Model):
