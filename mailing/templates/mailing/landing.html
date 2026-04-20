@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Сервис рассылок{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="display-4 mb-4">📧 Сервис управления рассылками</h1>
+    <p class="lead mb-5">Управляйте рассылками, отслеживайте статистику, экономьте время</p>
+    
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card mb-4 h-100">
+                <div class="card-body text-center">
+                    <h3>📨 Рассылки</h3>
+                    <p>Создавайте, редактируйте и запускайте массовые рассылки</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 h-100">
+                <div class="card-body text-center">
+                    <h3>👥 Клиенты</h3>
+                    <p>Храните базу получателей с полной информацией</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 h-100">
+                <div class="card-body text-center">
+                    <h3>📊 Статистика</h3>
+                    <p>Отслеживайте эффективность каждой рассылки</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+   <div class="mt-5">
+    {% if user.is_authenticated %}
+        <a href="{% url 'home' %}" class="btn btn-success btn-lg me-3">📊 Перейти к статистике</a>
+        <a href="{% url 'mailing:recipient_list' %}" class="btn btn-outline-primary btn-lg">📋 Управление рассылками</a>
+    {% else %}
+        <a href="{% url 'users:login' %}" class="btn btn-primary btn-lg me-3">🔐 Войти</a>
+        <a href="{% url 'users:register' %}" class="btn btn-outline-primary btn-lg">📝 Зарегистрироваться</a>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
