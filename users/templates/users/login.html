@@ -1,33 +1,55 @@
 {% extends 'base.html' %}
 
-{% block title %}Вход{% endblock %}
+{% block title %}Вход в систему{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header bg-success text-white">
-                <h2 class="mb-0">🔐 Вход в систему</h2>
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">🔐 Вход в систему</h3>
             </div>
             <div class="card-body">
+
+                {# ===== ВЫВОД ОШИБОК ФОРМЫ ===== #}
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>❌ Ошибка входа!</strong>
+                        <p>Пожалуйста, проверьте правильность email и пароля.</p>
+                    </div>
+                {% endif %}
+
                 <form method="post">
                     {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-3">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.errors %}
-                                <div class="alert alert-danger mt-1">{{ field.errors }}</div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-success">Войти</button>
-                    <a href="{% url 'users:register' %}" class="btn btn-secondary">Нет аккаунта?</a>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small">{{ form.username.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small">{{ form.password.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Войти</button>
                 </form>
-                <div class="text-center mt-3">
-                    <a href="{% url 'users:password_reset' %}">Забыли пароль?</a>
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'users:password_reset' %}" class="text-decoration-none">
+                        🔑 Забыли пароль?
+                    </a>
+                    <a href="{% url 'users:register' %}" class="text-decoration-none">
+                        📝 Регистрация
+                    </a>
                 </div>
             </div>
         </div>

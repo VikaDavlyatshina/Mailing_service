@@ -6,7 +6,7 @@
     <h1>Сообщения</h1>
     <a href="{% url 'mailing:message_create' %}" class="btn btn-primary mb-3">➕ Добавить</a>
     
-    {% if messages %}
+    {% if message_list %}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -16,14 +16,17 @@
                 </tr>
             </thead>
             <tbody>
-                {% for message in messages %}
+                {% for message in message_list %}
                 <tr>
                     <td>{{ message.subject }}</td>
                     <td>{{ message.email_body|truncatechars:100 }}</td>
                     <td>
                         <a href="{% url 'mailing:message_detail' message.pk %}">👁️</a>
-                        <a href="{% url 'mailing:message_update' message.pk %}">✏️</a>
-                        <a href="{% url 'mailing:message_delete' message.pk %}">❌</a>
+                        {# Кнопки редактирования и удаления — только если свой объект #}
+                        {% if message.owner == user %}
+                            <a href="{% url 'mailing:message_update' message.pk %}">✏️</a>
+                            <a href="{% url 'mailing:message_delete' message.pk %}">❌</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

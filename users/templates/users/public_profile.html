@@ -51,11 +51,14 @@
                 </table>
 
                 <div class="mt-3">
-                    <a href="{% url 'mailing:home' %}" class="btn btn-secondary">← На главную</a>
-<!--                    {# TODO: добавить блокировку пользователей для менеджеров #}-->
-<!--                    {% if is_manager and user_obj.is_active %}-->
-<!--                        <a href="{% url 'users:block_user' user_obj.slug %}" class="btn btn-danger">🔒 Заблокировать</a>-->
-<!--                    {% endif %}-->
+                    <a href="{% url 'home' %}" class="btn btn-secondary">← На главную</a>
+                    {% if is_manager %}
+                    {% if user_obj.is_active %}
+                    <a href="{% url 'users:block_user' user_obj.id %}" class="btn btn-danger">🔒 Заблокировать</a>
+                    {% else %}
+                    <a href="{% url 'users:block_user' user_obj.id %}" class="btn btn-success">🔓 Разблокировать</a>
+                    {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>

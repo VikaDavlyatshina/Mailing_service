@@ -24,9 +24,9 @@
             <tr>
                 <th>Статус:</th>
                 <td>
-                        <span class="badge bg-{% if mailing.get_dynamic_status == 'created' %}secondary{% elif mailing.get_dynamic_status == 'launched' %}success{% else %}danger{% endif %}">
-                            {{ mailing.get_status_display }}
-                        </span>
+                    <span class="badge bg-{% if mailing.status == 'created' %}secondary{% elif mailing.status == 'launched' %}success{% else %}danger{% endif %}">
+                        {{ mailing.get_status_display }}
+                    </span>
                 </td>
             </tr>
             <tr>
@@ -41,7 +41,9 @@
             </tr>
         </table>
     </div>
-    {% if mailing.get_dynamic_status == 'launched' %}
+
+    {# ===== КНОПКА ЗАПУСКА (только если статус 'launched') ===== #}
+    {% if mailing.status == 'launched' %}
     <div class="card-body bg-light">
         <form method="post" action="{% url 'mailing:run_mailing' mailing.pk %}">
             {% csrf_token %}
@@ -59,56 +61,77 @@
             ⏸️ Запуск недоступен
         </button>
         <small class="text-muted ms-3">
-            {% if mailing.get_dynamic_status == 'created' %}
-            Рассылка ещё не началась (start_time в будущем)
+            {% if mailing.status == 'created' %}
+                Рассылка ещё не началась (start_time в будущем)
+            {% elif mailing.status == 'completed' %}
+                Рассылка завершена
             {% else %}
-            Рассылка уже завершена
+                Рассылка недоступна для запуска
             {% endif %}
         </small>
     </div>
     {% endif %}
+
     <!-- История попыток отправки -->
-<div class="card mt-4">
-    <div class="card-header bg-info text-white">
-        <h3 class="mb-0">📜 История отправок</h3>
-    </div>
-    <div class="card-body">
-        {% if mailing.attempts.all %}
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h3 class="mb-0">📜 История отправок</h3>
+        </div>
+        <div class="card-body">
+            {% if mailing.attempts.all %}
             <table class="table table-sm table-striped">
                 <thead>
-                    <tr>
-                        <th>Дата и время</th>
-                        <th>Получатель</th>
-                        <th>Статус</th>
-                        <th>Ответ сервера</th>
-                    </tr>
+                <tr>
+                    <th>Дата и время</th>
+                    <th>Получатель</th>
+                    <th>Статус</th>
+                    <th>Ответ сервера</th>
+                </tr>
                 </thead>
                 <tbody>
-                    {% for attempt in mailing.attempts.all|slice:":20" %}
-                        <tr>
-                            <td>{{ attempt.attempt_time|date:"d.m.Y H:i:s" }}</td>
-                            <td>{{ attempt.recipient.email|default:"Не указан" }}</td>
-                            <td class="{% if attempt.status == 'success' %}text-success{% else %}text-danger{% endif %}">
-                                {{ attempt.get_status_display }}
-                            </td>
-                            <td>{{ attempt.server_response|truncatechars:80 }}</td>
-                        </tr>
-                    {% endfor %}
+                {% for attempt in mailing.attempts.all|slice:":20" %}
+                <tr>
+                    <td>{{ attempt.attempt_time|date:"d.m.Y H:i:s" }}</td>
+                    <td>{{ attempt.recipient.email|default:"Не указан" }}</td>
+                    <td class="{% if attempt.status == 'success' %}text-success{% else %}text-danger{% endif %}">
+                        {{ attempt.get_status_display }}
+                    </td>
+                    <td>{{ attempt.server_response|truncatechars:80 }}</td>
+                </tr>
+                {% endfor %}
                 </tbody>
             </table>
             {% if mailing.attempts.all|length > 20 %}
-                <p class="text-muted">Показаны последние 20 попыток из {{ mailing.attempts.all|length }}</p>
+            <p class="text-muted">Показаны последние 20 попыток из {{ mailing.attempts.all|length }}</p>
             {% endif %}
-        {% else %}
+            {% else %}
             <p class="text-muted">Пока нет ни одной попытки отправки. Нажмите "Запустить рассылку".</p>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
-</div>
 
     <div class="card-footer">
-        <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-warning">✏️ Редактировать</a>
-        <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-danger">🗑️ Удалить</a>
-        <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary">← Назад к списку</a>
+        {# Кнопка редактирования и удаления — только если свой объект #}
+        {% if mailing.owner == user %}
+            <a href="{% url 'mailing:mailing_update' mailing.pk %}" class="btn btn-warning">✏️ Редактировать</a>
+            <a href="{% url 'mailing:mailing_delete' mailing.pk %}" class="btn btn-danger">🗑️ Удалить</a>
+        {% endif %}
+
+        {# ===== КНОПКА ОТКЛЮЧЕНИЯ (ТОЛЬКО ДЛЯ МЕНЕДЖЕРОВ) ===== #}
+        {% if user.is_manager_user or user.is_superuser %}
+            {% if mailing.status == 'launched' %}
+            <a href="{% url 'mailing:mailing_disable' mailing.pk %}"
+               class="btn btn-secondary"
+               onclick="return confirm('Вы уверены, что хотите отключить эту рассылку?\n\nОна будет помечена как завершённая и больше не будет отправляться.')">
+                🔒 Отключить рассылку
+            </a>
+            {% endif %}
+        {% endif %}
+
+        {# Кнопка возврата к списку #}
+        <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary">
+            ← Назад к списку
+        </a>
     </div>
 </div>
 {% endblock %}

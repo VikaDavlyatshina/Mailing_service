@@ -14,8 +14,11 @@
             </div>
         </div>
         <div class="card-footer">
-            <a href="{% url 'mailing:message_update' message.pk %}" class="btn btn-warning">✏️ Редактировать</a>
-            <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-danger">🗑️ Удалить</a>
+            {# Кнопки редактирования и удаления — только если свой объект #}
+            {% if message.owner == user %}
+                <a href="{% url 'mailing:message_update' message.pk %}" class="btn btn-warning">✏️ Редактировать</a>
+                <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-danger">🗑️ Удалить</a>
+            {% endif %}
             <a href="{% url 'mailing:message_list' %}" class="btn btn-secondary">← Назад к списку</a>
         </div>
     </div>

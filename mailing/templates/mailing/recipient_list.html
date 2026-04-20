@@ -22,8 +22,11 @@
                     <td>{{ recipient.full_name }}</td>
                     <td>
                         <a href="{% url 'mailing:recipient_detail' recipient.pk %}">👁️</a>
+                        {# Кнопка редактирования — только если свой объект #}
+                        {% if recipient.owner == user %}
                         <a href="{% url 'mailing:recipient_update' recipient.pk %}">✏️</a>
                         <a href="{% url 'mailing:recipient_delete' recipient.pk %}">❌</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
