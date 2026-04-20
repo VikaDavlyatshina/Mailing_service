@@ -1,5 +1,5 @@
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, Permission
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -7,7 +7,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # Создаём группу
-        group, created = Group.objects.get_or_create(name='Менеджеры')
+        group, created = Group.objects.get_or_create(name="Менеджеры")
 
         # Список нужных прав
         permissions_codenames = [
@@ -24,7 +24,9 @@ class Command(BaseCommand):
                 group.permissions.add(perm)
                 self.stdout.write(f" - Добавлено разрешение {codename}")
             except Permission.DoesNotExist:
-                self.stdout.write(self.style.WARNING(f'  - Разрешение {codename} не найдено'))
+                self.stdout.write(
+                    self.style.WARNING(f"  - Разрешение {codename} не найдено")
+                )
 
         self.stdout.write(self.style.SUCCESS('✅ Группа "Менеджеры" настроена'))
 

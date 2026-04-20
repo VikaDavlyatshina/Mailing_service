@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+
 from config import settings
 
 # Create your models here.
@@ -40,7 +41,7 @@ class Recipient(models.Model):
         ordering = ["email"]
         # Кастомные права
         permissions = [
-            ('can_view_all_recipients', 'Может просматривать всех получателей'),
+            ("can_view_all_recipients", "Может просматривать всех получателей"),
         ]
 
 
@@ -129,12 +130,12 @@ class Mailing(models.Model):
 
         # Если сейчас раньше, чем начало отправки - статус Создана
         if now < self.start_time:
-            return "created"
+            return "created"  # Создана (ждёт старта)
         # Если сейчас позже, чем начало отправки, но раньше окончания - статус Запущена
         elif self.start_time <= now <= self.end_time:
-            return "launched"
+            return "launched"  # Запущена (работает)
         else:
-            return "completed"
+            return "completed"  # Завершена (закончилась)
 
     def update_status(self):
         """Обновляет статус в БД, если он изменился"""

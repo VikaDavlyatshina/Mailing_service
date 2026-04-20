@@ -1,16 +1,16 @@
-from django.contrib.auth.views import (
-    LoginView,
-    LogoutView,
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
-    PasswordResetCompleteView,
-)
+from django.contrib.auth.views import (LoginView, LogoutView,
+                                       PasswordResetCompleteView,
+                                       PasswordResetConfirmView,
+                                       PasswordResetDoneView,
+                                       PasswordResetView)
 from django.urls import path, reverse_lazy
 
 from users.apps import UsersConfig
-from users.forms import UserLoginForm, UserPasswordResetForm, UserSetPasswordForm
-from users.views import EmailConfirmView, ProfileView, UserCreateView, UserListView, block_user
+from users.forms import (UserLoginForm, UserPasswordResetForm,
+                         UserSetPasswordForm)
+from users.views import (EmailConfirmView, ProfileDetailView,
+                         ProfileUpdateView, UserCreateView, UserListView,
+                         block_user)
 
 app_name = UsersConfig.name
 
@@ -30,8 +30,12 @@ urlpatterns = [
     # Выход из системы
     path("logout/", LogoutView.as_view(), name="logout"),
     # Профиль
-    path("profile/<slug:slug>/", ProfileView.as_view(), name="profile"),
-
+    # Просмотр профиля
+    path("profile/<slug:slug>/", ProfileDetailView.as_view(), name="profile_detail"),
+    # Редактирование профиля (только свой)
+    path(
+        "profile/<slug:slug>/edit/", ProfileUpdateView.as_view(), name="profile_update"
+    ),
     # Восстановление пароля
     # Шаг 1: Форма "Забыли пароль?" — ввод email
     path(
@@ -44,16 +48,12 @@ urlpatterns = [
         ),
         name="password_reset",
     ),
-
     # Шаг 2: Сообщение "Письмо отправлено"
     path(
         "password-reset/done/",
-        PasswordResetDoneView.as_view(
-            template_name="users/password_reset_done.html"
-        ),
+        PasswordResetDoneView.as_view(template_name="users/password_reset_done.html"),
         name="password_reset_done",
     ),
-
     # Шаг 3: Ссылка из письма — форма ввода нового пароля
     path(
         "password-reset/<uidb64>/<token>/",
@@ -64,7 +64,6 @@ urlpatterns = [
         ),
         name="password_reset_confirm",
     ),
-
     # Шаг 4: Сообщение "Пароль успешно изменён"
     path(
         "password-reset/complete/",
@@ -73,10 +72,8 @@ urlpatterns = [
         ),
         name="password_reset_complete",
     ),
-
     # Список пользователей (только для менеджеров)
-    path('list/', UserListView.as_view(), name='user_list'),
-
+    path("list/", UserListView.as_view(), name="user_list"),
     # Блокировка пользователя (только для менеджеров)
-    path('block/<int:pk>/', block_user, name='block_user'),
+    path("block/<int:pk>/", block_user, name="block_user"),
 ]
