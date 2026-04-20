@@ -137,10 +137,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 AUTH_USER_MODEL = "users.CustomUser"
 
 # Куда перенаправлять после входа
-LOGIN_REDIRECT_URL = "mailing:home"
+LOGIN_REDIRECT_URL = "home"
 
 # Куда перенаправлять после выхода
-LOGOUT_REDIRECT_URL = "mailing:home"
+LOGOUT_REDIRECT_URL = "home"
 
 #   Страница для входа
 LOGIN_URL = "users:login"
@@ -158,3 +158,13 @@ ADMIN_EMAIL = os.getenv("ADMIN_EMAIL")
 
 # Время жизни токена в секундах
 PASSWORD_RESET_TIMEOUT = 3600  # 1 час (по умолчанию 3 дня)
+
+# Кеширование
+CACHE_ENABLED = True
+if CACHE_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.getenv("LOCATION"),
+        }
+    }
