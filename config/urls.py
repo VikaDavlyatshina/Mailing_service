@@ -18,12 +18,16 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.decorators.cache import cache_page
 
 from config import settings
+from mailing.views import HomeView, LandingView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("mailing.urls", namespace="mailing")),
+    path("", LandingView.as_view(), name="landing"),  # Публичная страница
+    path("home/", HomeView.as_view(), name="home"),  # Домашняя страница со статистикой
+    path("mailing/", include("mailing.urls", namespace="mailing")),
     path("users/", include("users.urls", namespace="users")),
 ]
 

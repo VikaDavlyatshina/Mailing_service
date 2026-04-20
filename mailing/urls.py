@@ -7,8 +7,6 @@ app_name = MailingConfig.name
 
 urlpatterns = [
     path("mailings/<int:pk>/run/", views.run_mailing, name="run_mailing"),
-    # ==================== ГЛАВНАЯ ====================
-    path("", views.HomeView.as_view(), name="home"),
     # ==================== ПОЛУЧАТЕЛИ ====================
     # Список
     path("recipients/", views.RecipientListView.as_view(), name="recipient_list"),
@@ -59,7 +57,7 @@ urlpatterns = [
     ),
     # ==================== РАССЫЛКИ ====================
     # Список
-    path("mailings/", views.MailingListView.as_view(), name="mailing_list"),
+    path("mailing_list/", views.MailingListView.as_view(), name="mailing_list"),
     # Создание
     path("mailings/create/", views.MailingCreateView.as_view(), name="mailing_create"),
     # Детально
@@ -77,5 +75,10 @@ urlpatterns = [
         "mailings/<int:pk>/delete/",
         views.MailingDeleteView.as_view(),
         name="mailing_delete",
+    ),
+    # Отключение рассылки (Администраторы)
+    path("mailings/<int:pk>/disable/", views.mailing_disable, name="mailing_disable"),
+    path(
+        "attempts/", views.MailingAttemptListView.as_view(), name="mailing_attempt_list"
     ),
 ]
