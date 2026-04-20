@@ -1,13 +1,18 @@
 import secrets
+
 from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.mail import send_mail
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, View, ListView
+from django.views.generic import (CreateView, DetailView, ListView, UpdateView,
+                                  View)
 
 from config.settings import EMAIL_HOST_USER
-from users.forms import UserProfileForm, UserRegisterForm, UserProfileReadOnlyForm
+from users.forms import (UserProfileForm, UserProfileReadOnlyForm,
+                         UserRegisterForm)
 from users.models import CustomUser
 
 
@@ -87,106 +92,122 @@ class EmailConfirmView(View):
         return redirect("users:login")
 
 
-class ProfileView(LoginRequiredMixin, UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     """
-    Просмотр и редактирование профиля пользователя.
-
-    Особенности:
-    - Если пользователь смотрит свой профиль → может редактировать
-    - Если менеджер смотрит чужой профиль → только просмотр
-    - Если обычный пользователь смотрит чужой профиль → ошибка 403
+    Редактирование ТОЛЬКО своего профиля.
     """
 
     model = CustomUser
     form_class = UserProfileForm
-    template_name = "users/profile.html"
-
+    template_name = "users/profile_form.html"
     slug_field = "slug"
     slug_url_kwarg = "slug"
 
-    def get_object(self, queryset=None):
-        slug = self.kwargs.get("slug")
-        return get_object_or_404(CustomUser, slug=slug)
+    def dispatch(self, request, *args, **kwargs):
+        """Запрещаем редактировать чужой профиль"""
+        user_obj = self.get_object()
+        if user_obj != request.user:
+            from django.core.exceptions import PermissionDenied
+
+            raise PermissionDenied("Вы можете редактировать только свой профиль")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_obj = self.get_object()
-        context["title"] = "Профиль пользователя"
+        context["title"] = "Редактирование профиля"
         context["button_text"] = "Сохранить изменения"
-        context["cancel_url"] = reverse_lazy("mailing:home")
-        context["is_owner"] = user_obj == self.request.user
-        context["is_manager"] = self.request.user.is_manager
-        context["user_obj"] = user_obj
+        context["cancel_url"] = reverse_lazy(
+            "users:profile_detail", kwargs={"slug": self.get_object().slug}
+        )
         return context
-
-    def get_form_class(self):
-        user_obj = self.get_object()
-
-        # Свой профиль — можно редактировать
-        if user_obj == self.request.user:
-            return UserProfileForm
-
-        # Чужой профиль для менеджера — только чтение
-        if self.request.user.is_staff:
-            return UserProfileReadOnlyForm
-
-        # Обычный пользователь смотрит чужой профиль — доступ запрещён
-        from django.core.exceptions import PermissionDenied
-
-        raise PermissionDenied("У вас нет доступа к этому профилю")
-
-    def get_template_names(self):
-        user_obj = self.get_object()
-        if user_obj == self.request.user:
-            return ["users/profile.html"]
-        return ["users/public_profile.html"]
 
     def form_valid(self, form):
         messages.success(self.request, "Профиль успешно обновлён!")
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("users:profile", kwargs={"slug": self.get_object().slug})
+        return reverse_lazy(
+            "users:profile_detail", kwargs={"slug": self.get_object().slug}
+        )
+
+
+class ProfileDetailView(LoginRequiredMixin, DetailView):
+    """
+    Просмотр профиля (своего или чужого для менеджера).
+    """
+
+    model = CustomUser
+    template_name = "users/profile_detail.html"
+    context_object_name = "user_obj"
+    slug_field = "slug"
+    slug_url_kwarg = "slug"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_obj = self.get_object()
+        context["is_owner"] = user_obj == self.request.user
+        context["is_manager"] = self.request.user.is_manager_user
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        user_obj = self.get_object()
+
+        if not request.user.is_authenticated:
+            raise Http404("Страница не найдена")
+
+        # Суперпользователь может всё
+        if request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
+
+        # Менеджер может смотреть чужие профили
+        if user_obj != request.user and not request.user.is_manager_user:
+            raise Http404("Страница не найдена")
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 # LoginRequiredMixin проверяет, вошёл ли пользователь
 # UserPassesTestMixin проверяет, имеет ли право пользователь
 class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """
-     Список пользователей сервиса.
-     Доступен только админам и суперпользователям
+    Список пользователей сервиса.
+    Доступен только админам и суперпользователям
     """
 
     model = CustomUser
     template_name = "users/user_list.html"
     context_object_name = "users"
-    ordering = ['-date_joined']  # Сначала новые пользователи
+    ordering = ["-date_joined"]  # Сначала новые пользователи
+    paginate_by = 20
 
     def test_func(self):
         """
-         Проверка, имеет ли пользователь право видеть список.
-         Только менеджеры (is_manager=True) и суперпользователи.
+        Проверка, имеет ли пользователь право видеть список.
+        Только менеджеры и суперпользователи.
         """
 
-        return self.request.user.is_manager or self.request.user.is_superuser
+        user = self.request.user
+        return user.is_manager_user or user.is_superuser
 
     def handle_no_permission(self):
-        """ Если нет прав - показываем ошибку 403 """
+        """Если нет прав - показываем ошибку 403"""
         from django.core.exceptions import PermissionDenied
+
         raise PermissionDenied("У вас нет доступа к списку пользователей")
 
 
+@user_passes_test(lambda u: u.is_manager_user or u.is_superuser)
 def block_user(request, pk):
     """
-        Блокировка/разблокировка пользователя.
-        Доступно только для менеджеров и суперпользователей.
-        """
+    Блокировка/разблокировка пользователя.
+    Доступно только для менеджеров и суперпользователей.
+    """
     user_to_block = get_object_or_404(CustomUser, id=pk)
 
     # Нельзя заблокировать самого себя
     if user_to_block == request.user:
         messages.error(request, "Вы не можете заблокировать самого себя.")
-        return redirect('users:user_list')
+        return redirect("users:user_list")
 
     # Переключаем статус: если активен → блокируем, если заблокирован → разблокируем
     user_to_block.is_active = not user_to_block.is_active
@@ -198,4 +219,4 @@ def block_user(request, pk):
     else:
         messages.success(request, f"Пользователь {user_to_block.email} заблокирован.")
 
-    return redirect('users:user_list')
+    return redirect("users:user_list")
