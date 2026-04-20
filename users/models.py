@@ -57,7 +57,7 @@ class CustomUser(AbstractUser):
     # 1. Username — уникальный, но может быть пустым
     username = models.CharField(
         max_length=150,
-        unique=True,
+        unique=False,
         blank=True,
         null=True,
         verbose_name="Логин (опционально)",
@@ -100,6 +100,7 @@ class CustomUser(AbstractUser):
         verbose_name="Токен подтверждения",
         help_text="Используется для верификации email при регистрации",
     )
+
     # 5. Кастомный менеджер
     objects = CustomUserManager()
 
@@ -120,7 +121,7 @@ class CustomUser(AbstractUser):
 
         # Создаём username
         if not self.username and self.email:
-            base_username = self.email.split('@')[0]
+            base_username = self.email.split("@")[0]
             self.username = base_username
             counter = 1
             while CustomUser.objects.filter(username=self.username).exists():
@@ -140,8 +141,17 @@ class CustomUser(AbstractUser):
 
     def get_display_name(self):
         """Имя для отображения в интерфейсе"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
         if self.username:
-            return self.username
+            return f"{self.username} ({self.email})"
         if self.first_name:
             return self.first_name
         return self.email.split("@")[0]
+
+    @property
+    def is_manager_user(self):
+        """Проверяет, является ли пользователь менеджером или суперпользователем"""
+        if self.is_superuser:
+            return True
+        return self.groups.filter(name="Менеджеры").exists()
