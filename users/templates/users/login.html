@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход в систему{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">🔐 Вход в систему</h3>
+            </div>
+            <div class="card-body">
+
+                {# ===== ВЫВОД ОШИБОК ФОРМЫ ===== #}
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>❌ Ошибка входа!</strong>
+                        <p>Пожалуйста, проверьте правильность email и пароля.</p>
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger small">{{ form.username.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <div class="text-danger small">{{ form.password.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Войти</button>
+                </form>
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'users:password_reset' %}" class="text-decoration-none">
+                        🔑 Забыли пароль?
+                    </a>
+                    <a href="{% url 'users:register' %}" class="text-decoration-none">
+                        📝 Регистрация
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

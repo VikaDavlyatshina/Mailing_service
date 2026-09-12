@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Получатели{% endblock %}
+
+{% block content %}
+    <h1>Получатели</h1>
+    <a href="{% url 'mailing:recipient_create' %}" class="btn btn-primary mb-3">➕ Добавить</a>
+    
+    {% if recipients %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Ф.И.О.</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for recipient in recipients %}
+                <tr>
+                    <td>{{ recipient.email }}</td>
+                    <td>{{ recipient.full_name }}</td>
+                    <td>
+                        <a href="{% url 'mailing:recipient_detail' recipient.pk %}">👁️</a>
+                        {# Кнопка редактирования — только если свой объект #}
+                        {% if recipient.owner == user %}
+                        <a href="{% url 'mailing:recipient_update' recipient.pk %}">✏️</a>
+                        <a href="{% url 'mailing:recipient_delete' recipient.pk %}">❌</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Нет получателей.</p>
+    {% endif %}
+{% endblock %}

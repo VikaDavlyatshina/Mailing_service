@@ -19,6 +19,14 @@ venv.bak/
 *.swo
 *~
 
+# Media files (загруженные пользователями)
+media/
+MEDIA/
+mediafiles/
+uploads/
+staticfiles/
+static/
+
 # Database
 *.db
 *.sqlite

@@ -14,9 +14,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+from django.views.decorators.cache import cache_page
+
+from config import settings
+from mailing.views import HomeView, LandingView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("", LandingView.as_view(), name="landing"),  # Публичная страница
+    path("home/", HomeView.as_view(), name="home"),  # Домашняя страница со статистикой
+    path("mailing/", include("mailing.urls", namespace="mailing")),
+    path("users/", include("users.urls", namespace="users")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0]
+    )
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

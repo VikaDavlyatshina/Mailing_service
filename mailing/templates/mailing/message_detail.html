@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ message.subject }}{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h1>{{ message.subject }}</h1>
+        </div>
+        <div class="card-body">
+            <h5>Текст письма:</h5>
+            <div class="border p-3 bg-light rounded">
+                {{ message.email_body|linebreaks }}
+            </div>
+        </div>
+        <div class="card-footer">
+            {# Кнопки редактирования и удаления — только если свой объект #}
+            {% if message.owner == user %}
+                <a href="{% url 'mailing:message_update' message.pk %}" class="btn btn-warning">✏️ Редактировать</a>
+                <a href="{% url 'mailing:message_delete' message.pk %}" class="btn btn-danger">🗑️ Удалить</a>
+            {% endif %}
+            <a href="{% url 'mailing:message_list' %}" class="btn btn-secondary">← Назад к списку</a>
+        </div>
+    </div>
+{% endblock %}

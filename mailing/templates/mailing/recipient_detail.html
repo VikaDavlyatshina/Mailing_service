@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ recipient.full_name }}{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h1>{{ recipient.full_name }}</h1>
+        </div>
+        <div class="card-body">
+            <table class="table table-borderless">
+                <tr>
+                    <th style="width: 150px;">Email:</th>
+                    <td>{{ recipient.email }}</td>
+                </tr>
+                <tr>
+                    <th>Ф.И.О.:</th>
+                    <td>{{ recipient.full_name }}</td>
+                </tr>
+                <tr>
+                    <th>Комментарий:</th>
+                    <td>{{ recipient.comment|default:"<em>Нет комментария</em>" }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-footer">
+            {# Кнопка редактирования — только если свой объект #}
+            {% if recipient.owner == user %}
+            <a href="{% url 'mailing:recipient_update' recipient.pk %}">✏️</a>
+            <a href="{% url 'mailing:recipient_delete' recipient.pk %}">❌</a>
+            {% endif %}
+            <a href="{% url 'mailing:recipient_list' %}" class="btn btn-secondary">← Назад к списку</a>
+        </div>
+    </div>
+{% endblock %}
