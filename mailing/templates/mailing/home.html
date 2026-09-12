@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Сервис управления рассылками{% endblock %}
+
+{% block content %}
+<h1 class="text-center mb-4">📧 Сервис управления рассылками</h1>
+
+<div class="stats">
+    <div class="card-custom">
+        <h2>📨 Всего рассылок</h2>
+        <p class="number">{{ total_mailings }}</p>
+    </div>
+    <div class="card-custom">
+        <h2>⚡ Активных рассылок</h2>
+        <p class="number">{{ active_mailings }}</p>
+    </div>
+    <div class="card-custom">
+        <h2>👥 Получателей</h2>
+        <p class="number">{{ unique_recipients }}</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h5>✅ Успешно отправлено</h5>
+                <h2>{{ successful_attempts }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body text-center">
+                <h5>❌ Ошибок</h5>
+                <h2>{{ failed_attempts }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body text-center">
+                <h5>📊 Успешность</h5>
+                <h2>{{ success_rate }}%</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <a href="{% url 'mailing:mailing_create' %}" class="btn btn-success me-2">➕ Создать рассылку</a>
+    <a href="{% url 'mailing:recipient_list' %}" class="btn btn-primary me-2">📋 Получатели</a>
+    <a href="{% url 'mailing:message_list' %}" class="btn btn-info">📝 Сообщения</a>
+</div>
+{% endblock %}
